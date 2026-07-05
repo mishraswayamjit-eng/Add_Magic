@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professor Hoot's Number Nest — Addition & Subtraction Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!-- Fonts are a progressive enhancement. If they don't load (shared/offline),
+     the rounded system fallbacks below keep the layout looking correct. -->
+<style>
+:root{
+  --leaf:#3BC97F; --leaf-d:#22A863;
+  --sky:#3FA9F5; --sky-d:#1E86D6;
+  --grape:#8A6BF0; --grape-d:#6B4CD6;
+  --sun:#FFC23C; --sun-d:#E8A61E;
+  --rose:#FF7BA0; --rose-d:#E85480;
+  --ink:#2B2A4C; --paper:#ffffff;
+  --soft:#5b5975;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Nunito','Trebuchet MS','Segoe UI',system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(160deg,#E7F8F0 0%,#E6F3FF 50%,#F3ECFF 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+  padding-bottom:88px;
+}
+h1,h2,h3,.q-text,.hud-name,.lvl-badge,.big{font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* ============ HUD ============ */
+.hud{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);
+  border-bottom:2px solid #ffffff;box-shadow:0 3px 14px rgba(90,60,180,.10)}
+.hud-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px 14px}
+.hud-owl{width:42px;height:42px;flex:none}
+.hud-mid{flex:1;min-width:0}
+.hud-name{font-size:15px;font-weight:600;line-height:1}
+.lvlrow{display:flex;align-items:center;gap:7px;margin-top:4px}
+.lvl-badge{background:var(--grape);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.xpbar{flex:1;height:9px;background:#e7e2f6;border-radius:9px;overflow:hidden;max-width:150px}
+.xpfill{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--leaf),var(--sky));transition:width .5s}
+.hud-stats{display:flex;gap:6px}
+.chip{display:flex;align-items:center;gap:3px;background:#fff;border:2px solid #eee;border-radius:20px;
+  padding:3px 9px;font-weight:800;font-size:13px}
+.chip .em{font-size:14px}
+.mute{border:none;background:#fff;border:2px solid #eee;border-radius:12px;width:36px;height:34px;font-size:16px;cursor:pointer}
+
+.wrap{max-width:760px;margin:0 auto;padding:16px 14px 30px}
+.screen{display:none;animation:fade .35s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-size:12px;font-weight:800;color:var(--soft);margin:6px 2px 10px}
+
+/* ============ Hoot talk ============ */
+.hoot-talk{display:flex;align-items:flex-end;gap:12px;margin:6px 0 18px}
+.big-owl{width:88px;height:88px;flex:none;filter:drop-shadow(0 6px 8px rgba(90,60,180,.18))}
+.bubble{background:#fff;border:2px solid #fff;border-radius:18px 18px 18px 4px;padding:13px 15px;
+  box-shadow:0 6px 0 rgba(120,90,210,.12);font-weight:700;font-size:15px;line-height:1.4}
+
+/* ============ Quest map ============ */
+.quest{display:flex;flex-direction:column;gap:0}
+.qnode{display:flex;align-items:center;gap:14px;position:relative;padding:6px 0}
+.qnode .line{position:absolute;left:31px;top:0;bottom:0;width:4px;background:#e0dcf2;z-index:0}
+.qnode:first-child .line{top:50%}
+.qnode:last-child .line{bottom:50%}
+.qdot{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:30px;
+  font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;color:#fff;position:relative;z-index:1;
+  box-shadow:0 5px 0 rgba(0,0,0,.14);cursor:pointer;border:4px solid #fff}
+.qdot.lock{background:#c9c4dd;box-shadow:0 5px 0 #b3addd;cursor:not-allowed}
+.qcard{flex:1;background:#fff;border-radius:16px;padding:11px 14px;box-shadow:0 4px 0 rgba(120,90,210,.10);cursor:pointer}
+.qcard h3{margin:0 0 3px;font-size:16px}
+.qcard p{margin:0;font-size:13px;color:var(--soft);font-weight:600}
+.qcard.lock{opacity:.55;cursor:not-allowed}
+.qmeta{display:flex;gap:5px;margin-top:6px}
+.star{font-size:14px;filter:grayscale(1);opacity:.4}
+.star.on{filter:none;opacity:1}
+.week-label{font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;font-size:13px;color:var(--grape-d);
+  margin:16px 2px 4px;text-transform:uppercase;letter-spacing:.05em}
+
+/* ============ Buttons ============ */
+.btn{border:none;font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:600;font-size:16px;color:#fff;
+  padding:13px 20px;border-radius:16px;cursor:pointer;transition:transform .05s;display:inline-block;text-align:center}
+.btn:active{transform:translateY(3px)}
+.btn.leaf{background:var(--leaf);box-shadow:0 4px 0 var(--leaf-d)}
+.btn.leaf:active{box-shadow:0 1px 0 var(--leaf-d)}
+.btn.sky{background:var(--sky);box-shadow:0 4px 0 var(--sky-d)}
+.btn.sky:active{box-shadow:0 1px 0 var(--sky-d)}
+.btn.grape{background:var(--grape);box-shadow:0 4px 0 var(--grape-d)}
+.btn.grape:active{box-shadow:0 1px 0 var(--grape-d)}
+.btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 4px 0 var(--sun-d)}
+.btn.sun:active{box-shadow:0 1px 0 var(--sun-d)}
+.btn.block{display:block;width:100%;margin-top:10px}
+.btn.ghost{background:#fff;color:var(--grape-d);box-shadow:0 4px 0 #ddd4f5}
+
+/* ============ Lesson / notes ============ */
+.lesson{background:#fff;border-radius:20px;padding:18px;box-shadow:0 6px 0 rgba(120,90,210,.10);margin-bottom:14px}
+.lesson h2{margin:0 0 4px;font-size:22px}
+.lesson .tag{display:inline-block;background:var(--sun);color:var(--ink);font-weight:800;font-size:12px;
+  padding:3px 10px;border-radius:20px;margin-bottom:10px}
+.lesson p{font-size:15px;line-height:1.55;font-weight:600}
+.trick{background:#F3ECFF;border-radius:14px;padding:13px 15px;margin:12px 0;border-left:5px solid var(--grape)}
+.trick b{color:var(--grape-d)}
+.eg{font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:600;font-size:19px;text-align:center;margin:10px 0;color:var(--ink)}
+
+/* ten-frame */
+.tenframe{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:230px;margin:12px auto;
+  background:#efe9ff;padding:8px;border-radius:12px}
+.tf-cell{aspect-ratio:1;background:#fff;border:2px solid #d9cffc;border-radius:8px;display:grid;place-items:center;font-size:20px}
+.tf-cell.a{background:#fff4d6}
+.tf-cell.b{background:#d6f5e6}
+.tflabel{text-align:center;font-weight:800;color:var(--soft);font-size:13px;margin-top:-4px}
+
+/* in-quiz mini ten-frame */
+.qframe{margin:6px auto 2px;max-width:250px}
+.qframe .row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:#efe9ff;padding:6px;border-radius:12px;
+  border:3px solid #efe9ff;transition:border-color .3s,box-shadow .3s}
+.qframe .row.full{border-color:var(--leaf);box-shadow:0 0 0 3px #d6f5e6}
+.qframe .c{aspect-ratio:1;background:#fff;border:2px solid #d9cffc;border-radius:7px;display:grid;place-items:center;
+  font-size:15px;color:#fff;font-weight:800}
+.qframe .c.first{background:var(--sky);border-color:var(--sky-d)}   /* the starting number */
+.qframe .c.gap{background:var(--sun);border-color:var(--sun-d)}     /* completes the ten */
+.qframe .c.rest{background:var(--leaf);border-color:var(--leaf-d)}  /* leftover, spills to 2nd row */
+.qframe .cap{text-align:center;font-weight:800;font-size:12px;color:var(--grape-d);margin-top:5px}
+
+/* number bond */
+.bond{display:flex;flex-direction:column;align-items:center;gap:2px;margin:14px 0}
+.bond-top{width:66px;height:66px;border-radius:50%;background:var(--sky);color:#fff;display:grid;place-items:center;
+  font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-size:26px;font-weight:700;box-shadow:0 4px 0 var(--sky-d)}
+.bond-legs{display:flex;gap:44px;position:relative}
+.bond-legs:before,.bond-legs:after{content:"";position:absolute;top:-14px;width:3px;height:20px;background:#bcb5d6}
+.bond-legs:before{left:34%;transform:rotate(28deg)}
+.bond-legs:after{right:34%;transform:rotate(-28deg)}
+.bond-leaf{width:56px;height:56px;border-radius:50%;background:var(--leaf);color:#fff;display:grid;place-items:center;
+  font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-size:22px;font-weight:700;box-shadow:0 4px 0 var(--leaf-d)}
+
+/* ============ Quiz ============ */
+.quizhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qprog{font-weight:800;color:var(--soft);font-size:14px}
+.qtimer{font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;font-size:15px;background:#fff;padding:4px 12px;border-radius:20px;box-shadow:0 3px 0 #e5def5}
+.qcard-big{background:#fff;border-radius:22px;padding:26px 18px;box-shadow:0 7px 0 rgba(120,90,210,.12);text-align:center;margin-bottom:14px}
+.q-text{font-size:52px;font-weight:700;margin:6px 0 4px;letter-spacing:1px}
+.q-hint{font-size:13px;color:var(--soft);font-weight:700;min-height:18px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.opt{background:#fff;border:3px solid #ece7f8;border-radius:16px;padding:18px;font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;
+  font-weight:700;font-size:26px;cursor:pointer;transition:transform .05s;box-shadow:0 4px 0 #e5def5}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 #e5def5}
+.opt.right{background:#d6f5e6;border-color:var(--leaf);box-shadow:0 4px 0 var(--leaf-d)}
+.opt.wrong{background:#ffe0e8;border-color:var(--rose);box-shadow:0 4px 0 var(--rose-d)}
+.opt.dim{opacity:.45}
+
+/* results */
+.result{background:#fff;border-radius:22px;padding:24px 18px;box-shadow:0 7px 0 rgba(120,90,210,.12);text-align:center}
+.result .big{font-size:30px;margin:8px 0 2px}
+.scorepct{font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;font-size:56px;font-weight:700;color:var(--grape-d)}
+.starsrow{font-size:34px;margin:6px 0}
+.miss{background:#fff;border-radius:14px;padding:11px 14px;margin:8px 0;box-shadow:0 3px 0 #eee;text-align:left;font-weight:700}
+.miss .fix{color:var(--leaf-d);font-size:13px;margin-top:3px;font-weight:800}
+
+/* stickers */
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.badge{background:#fff;border-radius:16px;padding:14px 8px;text-align:center;box-shadow:0 4px 0 rgba(120,90,210,.10)}
+.badge .ic{font-size:38px;filter:grayscale(1);opacity:.32}
+.badge.on .ic{filter:none;opacity:1;animation:pop .4s}
+.badge .nm{font-size:12px;font-weight:800;margin-top:5px}
+.badge .ds{font-size:10px;color:var(--soft);font-weight:700;margin-top:2px}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* bottom nav */
+nav.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);
+  border-top:2px solid #fff;box-shadow:0 -3px 14px rgba(90,60,180,.10);z-index:40}
+.tabbar-in{max-width:760px;margin:0 auto;display:flex}
+.tab{flex:1;border:none;background:none;padding:9px 4px 8px;cursor:pointer;color:var(--soft);font-weight:800;font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab .ni{font-size:21px;filter:grayscale(.3)}
+.tab.on{color:var(--grape-d)}
+.tab.on .ni{filter:none}
+
+/* toast + confetti */
+.toast{position:fixed;left:50%;top:64px;transform:translateX(-50%) translateY(-20px);background:var(--ink);color:#fff;
+  padding:11px 18px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:.35s;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:55}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pill{background:#fff;border:2px solid #ece7f8;border-radius:20px;padding:7px 14px;font-weight:800;font-size:13px;cursor:pointer;color:var(--soft)}
+.pill.on{background:var(--grape);color:#fff;border-color:var(--grape)}
+
+@media(max-width:480px){
+  .q-text{font-size:44px}
+  .opt{font-size:22px;padding:15px}
+  .big-owl{width:74px;height:74px}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div id="confetti"></div>
+<div class="toast" id="toast"></div>
+
+<div class="hud">
+ <div class="hud-in">
+  <span class="hud-owl" id="hudOwl"></span>
+  <div class="hud-mid">
+    <div class="hud-name">Professor Hoot</div>
+    <div class="lvlrow">
+      <span class="lvl-badge" id="lvlBadge">Lv 1</span>
+      <span class="xpbar"><span class="xpfill" id="xpFill"></span></span>
+    </div>
+  </div>
+  <div class="hud-stats">
+    <span class="chip"><span class="em">⭐</span><span id="starN">0</span></span>
+    <span class="chip"><span class="em">🔥</span><span id="streakN">0</span></span>
+  </div>
+  <button class="mute" id="muteBtn" onclick="toggleMute()" title="Sound on/off">🔊</button>
+ </div>
+</div>
+
+<div class="wrap">
+<h1 class="sr-only">Professor Hoot's Number Nest</h1>
+
+<!-- ============ HOME / QUEST ============ -->
+<section id="screen-home" class="screen active">
+  <div class="hoot-talk">
+    <span class="big-owl" id="homeOwl"></span>
+    <div class="bubble" id="homeBubble">Hoot hoot! I'm Professor Hoot. Here's my biggest secret: <b>TEN is your best friend</b> 🔟. Almost every fast trick works by building a ten first. Learn that, and adding & subtracting become instinct — no boring memorising! Tap a nest to begin.</div>
+  </div>
+  <div class="eyebrow">Your 3-Week Number Quest</div>
+  <div class="quest" id="questMap"></div>
+</section>
+
+<!-- ============ LESSON ============ -->
+<section id="screen-lesson" class="screen">
+  <button class="btn ghost" style="font-size:14px;padding:8px 14px" onclick="switchTab('home')">← Back to map</button>
+  <div id="lessonBody" style="margin-top:12px"></div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="screen-quiz" class="screen">
+  <div id="quizSetup"></div>
+  <div id="quizLive" style="display:none">
+    <div class="quizhead">
+      <span class="qprog" id="qProg">1 / 10</span>
+      <span class="qtimer" id="qTimer">⏱ 0s</span>
+    </div>
+    <div class="qcard-big">
+      <div class="q-text" id="qText">3 + 8</div>
+      <div id="qFrame" class="qframe"></div>
+      <div class="q-hint" id="qHint"></div>
+    </div>
+    <div class="opts" id="qOpts"></div>
+  </div>
+  <div id="quizResult" style="display:none"></div>
+</section>
+
+<!-- ============ STICKERS ============ -->
+<section id="screen-stickers" class="screen">
+  <div class="eyebrow">Sticker Nest</div>
+  <div class="badge-grid" id="badgeGrid"></div>
+  <div class="lesson" style="margin-top:16px;text-align:center">
+    <p style="margin:0">Play quizzes and finish lessons to earn every sticker!</p>
+    <button class="btn grape block" onclick="resetAll()">Start the whole quest over</button>
+  </div>
+</section>
+</div>
+
+<!-- ============ TAB BAR ============ -->
+<nav class="tabbar"><div class="tabbar-in">
+  <button class="tab on" id="tab-home" onclick="switchTab('home')"><span class="ni">🗺️</span>Map</button>
+  <button class="tab" id="tab-lesson" onclick="openCurrentLesson()"><span class="ni">📖</span>Learn</button>
+  <button class="tab" id="tab-quiz" onclick="switchTab('quiz')"><span class="ni">🎮</span>Play</button>
+  <button class="tab" id="tab-stickers" onclick="switchTab('stickers')"><span class="ni">🏅</span>Stickers</button>
+</div></nav>
+
+<script>
+/* ========= OWL MASCOT (inline SVG, swappable moods) ========= */
+function owl(mood){
+  var eyeL='<circle cx="33" cy="42" r="11" fill="#fff"/><circle cx="33" cy="43" r="5.5" fill="#2B2A4C"/><circle cx="35" cy="41" r="2" fill="#fff"/>';
+  var eyeR='<circle cx="67" cy="42" r="11" fill="#fff"/><circle cx="67" cy="43" r="5.5" fill="#2B2A4C"/><circle cx="69" cy="41" r="2" fill="#fff"/>';
+  var brows='';
+  var beak='<path d="M50 52 l-6 8 h12 z" fill="#FFC23C"/>';
+  var extra='';
+  if(mood==='oops'){
+    eyeL='<circle cx="33" cy="42" r="11" fill="#fff"/><circle cx="33" cy="44" r="5" fill="#2B2A4C"/>';
+    eyeR='<circle cx="67" cy="42" r="11" fill="#fff"/><circle cx="67" cy="44" r="5" fill="#2B2A4C"/>';
+    brows='<path d="M24 31 l16 5" stroke="#5E3FE0" stroke-width="3" stroke-linecap="round"/><path d="M76 31 l-16 5" stroke="#5E3FE0" stroke-width="3" stroke-linecap="round"/>';
+    beak='<path d="M50 53 l-5 7 h10 z" fill="#FFC23C"/>';
+  } else if(mood==='cheer'||mood==='wow'){
+    eyeL='<path d="M24 44 q9 -12 18 0" stroke="#2B2A4C" stroke-width="4" fill="none" stroke-linecap="round"/>';
+    eyeR='<path d="M58 44 q9 -12 18 0" stroke="#2B2A4C" stroke-width="4" fill="none" stroke-linecap="round"/>';
+    beak='<path d="M50 52 l-7 6 q7 7 14 0 z" fill="#FFC23C"/>';
+    if(mood==='wow') extra='<text x="79" y="26" font-size="20">✨</text><text x="8" y="30" font-size="16">⭐</text>';
+  } else if(mood==='think'){
+    eyeR='<circle cx="67" cy="42" r="11" fill="#fff"/><circle cx="69" cy="40" r="5.5" fill="#2B2A4C"/>';
+    brows='<path d="M24 30 l16 3" stroke="#5E3FE0" stroke-width="3" stroke-linecap="round"/>';
+  }
+  return '<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Professor Hoot the owl">'
+    +'<ellipse cx="50" cy="92" rx="26" ry="6" fill="#000" opacity=".08"/>'
+    +'<path d="M50 14 C24 14 16 36 16 56 C16 80 32 92 50 92 C68 92 84 80 84 56 C84 36 76 14 50 14 Z" fill="#8A6BF0"/>'
+    +'<path d="M50 26 C33 26 26 42 26 58 C26 76 38 86 50 86 C62 86 74 76 74 58 C74 42 67 26 50 26 Z" fill="#B7A3F7"/>'
+    +'<path d="M20 20 Q24 10 34 16 Q30 26 24 30 Z" fill="#6B4CD6"/>'
+    +'<path d="M80 20 Q76 10 66 16 Q70 26 76 30 Z" fill="#6B4CD6"/>'
+    +'<circle cx="33" cy="42" r="14" fill="#EFE9FF"/><circle cx="67" cy="42" r="14" fill="#EFE9FF"/>'
+    +brows+eyeL+eyeR+beak
+    +'<path d="M30 74 q-8 4 -12 12" stroke="#6B4CD6" stroke-width="4" fill="none" stroke-linecap="round"/>'
+    +'<path d="M70 74 q8 4 12 12" stroke="#6B4CD6" stroke-width="4" fill="none" stroke-linecap="round"/>'
+    +'<path d="M40 88 h8 M52 88 h8" stroke="#FFC23C" stroke-width="4" stroke-linecap="round"/>'
+    +extra+'</svg>';
+}
+
+/* ========= STORAGE (window.storage w/ memory fallback) ========= */
+var MEM={}; var HAS_STORE = (typeof window!=='undefined' && window.storage && typeof window.storage.get==='function');
+async function sget(k){ if(HAS_STORE){ try{var r=await window.storage.get(k); return r?r.value:null;}catch(e){return MEM[k]||null;} } return MEM[k]||null; }
+async function sset(k,v){ if(HAS_STORE){ try{await window.storage.set(k,v);return;}catch(e){} } MEM[k]=v; }
+var KEY='hoot_math_v1';
+var P={xp:0,stars:0,streak:0,mute:false,done:{},best:{},badges:{}};
+async function loadP(){ var raw=await sget(KEY); if(raw){ try{P=Object.assign(P,JSON.parse(raw));}catch(e){} } }
+async function saveP(){ await sset(KEY, JSON.stringify(P)); }
+
+/* ========= SOUND ========= */
+var AC=null;
+function beep(type){
+  if(P.mute) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    var seq={right:[[660,0],[880,.09]],wrong:[[300,0],[200,.12]],level:[[523,0],[659,.09],[784,.18]],
+             star:[[880,0],[1175,.08]],tap:[[440,0]]}[type]||[[440,0]];
+    seq.forEach(function(s){var o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=s[0];
+      o.connect(g);g.connect(AC.destination);var t=AC.currentTime+s[1];g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.2,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.16);
+      o.start(t);o.stop(t+.18);});
+  }catch(e){}
+}
+function toggleMute(){P.mute=!P.mute;document.getElementById('muteBtn').textContent=P.mute?'🔇':'🔊';saveP();}
+
+/* ========= CONFETTI ========= */
+function confetti(big){
+  var host=document.getElementById('confetti');var n=big?70:34;var cols=['#3BC97F','#3FA9F5','#8A6BF0','#FFC23C','#FF7BA0'];
+  for(var i=0;i<n;i++){(function(){var d=document.createElement('div');var s=6+Math.random()*8;
+    d.style.cssText='position:absolute;width:'+s+'px;height:'+s+'px;background:'+cols[i%5]+';left:'+(Math.random()*100)+'%;top:-20px;border-radius:'+(Math.random()<.5?'50%':'3px')+';opacity:.95';
+    host.appendChild(d);var x=(Math.random()-.5)*220,y=window.innerHeight+40,rot=Math.random()*720;
+    d.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate('+x+'px,'+y+'px) rotate('+rot+'deg)'}],
+      {duration:1500+Math.random()*900,easing:'cubic-bezier(.2,.6,.3,1)'}).onfinish=function(){d.remove();};})();}
+}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},1800);}
+
+/* ========= CURRICULUM DATA ========= */
+/* Each lesson = a "nest". Weeks group them. Quiz generators create fresh questions each play. */
+var LESSONS=[
+ {id:'w1a',week:'Week 1 · The Foundation',color:'leaf',icon:'🥚',title:'Partners of Ten',
+  sub:'The magic pairs that make 10',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">The #1 super-power</span>
+      <h2>Partners of Ten 🥚</h2>
+      <p>Two numbers that snap together to make <b>10</b> are called <b>partners</b>. If you know these by heart, EVERY other trick becomes easy. These are the bricks of the whole nest!</p>
+      <div class="trick"><b>The five pairs:</b><br>
+        1 &amp; 9 · 2 &amp; 8 · 3 &amp; 7 · 4 &amp; 6 · 5 &amp; 5</div>
+      ${tenFrame(6,4)}
+      <div class="tflabel">See it: 6 yellow + 4 green fills the whole frame = 10</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> Hold up all 10 fingers. Fold down 3. How many stand up? <b>7!</b> So 3's partner is 7. Your hands are a partner machine.</div>
+      <p><b>Practise out loud:</b> "Seven needs… three! Eight needs… two!" Say them until they pop out with no thinking.</p>
+    </div>`;},
+  quiz:function(){return genPartners();}
+ },
+ {id:'w1b',week:'Week 1 · The Foundation',color:'leaf',icon:'🪺',title:'Count On',
+  sub:'Start big, hop up small',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">Warm-up trick</span>
+      <h2>Count On from the Big Number 🪺</h2>
+      <p>When you add, always start from the <b>bigger</b> number and hop up by the small one. For <b>2 + 9</b>, don't start at 2! Flip it: start at <b>9</b>, then hop <b>10… 11</b>. Done in two hops!</p>
+      <div class="eg">2 + 9  →  start at 9  →  🐸 10 → 🐸 11</div>
+      <div class="trick"><b>Why flip?</b> 2 + 9 and 9 + 2 give the same answer (that's the <b>flip rule</b>). Flipping means fewer hops and fewer mistakes.</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> Only use counting-on for adding <b>1, 2, or 3</b>. For bigger jumps we have faster tricks coming!</div>
+    </div>`;},
+  quiz:function(){return genCountOn();}
+ },
+ {id:'w1c',week:'Week 1 · The Foundation',color:'leaf',icon:'🎯',title:'Week 1 Boss Quiz',
+  sub:'Partners + Count On mixed',boss:true,
+  teach:function(){return bossIntro('Week 1 Boss','You learned Partners of Ten and Count On. Mix them together and beat the clock! Score 75% or better to earn your first trophy. 🏆');},
+  quiz:function(){return shuffle(genPartners().concat(genCountOn())).slice(0,QUIZ_LEN);}
+ },
+
+ {id:'w2a',week:'Week 2 · The Power Tricks',color:'sky',icon:'🔟',title:'Make a Ten',
+  sub:'The strongest trick of all',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">The master move</span>
+      <h2>Make a Ten 🔟</h2>
+      <p>Ten is easy to add to. So we <b>build a ten first</b>, then add the leftovers. Watch <b>8 + 5</b>:</p>
+      <div class="trick"><b>Step 1:</b> 8 wants 2 more to become 10 (its partner!).<br>
+        <b>Step 2:</b> Split the 5 into <b>2 + 3</b>. Give the 2 to the 8.<br>
+        <b>Step 3:</b> Now it's 10 + 3 = <b>13</b>. 🎉</div>
+      ${bondSVG(5,2,3)}
+      <div class="tflabel">Split the 5 into 2 (to finish the ten) and 3 (leftover)</div>
+      <div class="eg">8 + 5 → (8+2) + 3 → 10 + 3 → 13</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> This is why Partners of Ten came first! You must know "8 needs 2" instantly for this trick to fly.</div>
+    </div>`;},
+  quiz:function(){return genMakeTen();}
+ },
+ {id:'w2b',week:'Week 2 · The Power Tricks',color:'sky',icon:'👯',title:'Doubles & Near-Doubles',
+  sub:'Twins are lightning fast',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">Anchor facts</span>
+      <h2>Doubles &amp; Near-Doubles 👯</h2>
+      <p>Twins are easy to remember because they have a rhythm: <b>6+6=12, 7+7=14, 8+8=16</b>. Learn the doubles and you unlock their neighbours for free!</p>
+      <div class="trick"><b>Near-double:</b> 6 + 7 is just next to 6 + 6.<br>
+        6 + 6 = 12, so 6 + 7 = <b>12 + 1 = 13</b>.</div>
+      <div class="eg">7 + 8 → double 7 (14) + 1 → 15</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> If two numbers are <b>next-door</b> (like 6 and 7), think of the double in the middle, then hop one step.</div>
+      <p><b>Doubles to own:</b> 1+1, 2+2, 3+3, 4+4, 5+5, 6+6, 7+7, 8+8, 9+9. Chant them like a song!</p>
+    </div>`;},
+  quiz:function(){return genDoubles();}
+ },
+ {id:'w2c',week:'Week 2 · The Power Tricks',color:'sky',icon:'9️⃣',title:'The +9 & +8 Magic',
+  sub:'Add ten, give a little back',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">Speed trick</span>
+      <h2>The +9 and +8 Magic 9️⃣</h2>
+      <p>9 is almost 10. So to add 9: <b>add 10, then step back 1</b>. For <b>9 + 6</b>: 10 + 6 = 16, step back 1 = <b>15</b>.</p>
+      <div class="eg">7 + 9 → 7 + 10 → 17 → step back 1 → 16</div>
+      <div class="trick"><b>+8 works too:</b> add 10, step back <b>2</b>. So 8 + 6 → 16 → back 2 → <b>14</b>.</div>
+      <div class="trick">🦉 <b>Hoot's spy trick:</b> When you add 9, the answer's last digit is always <b>one less</b> than the other number. 9+6 → 6 becomes 5 → 1<b>5</b>. Spooky and fast!</div>
+    </div>`;},
+  quiz:function(){return genNine();}
+ },
+ {id:'w2d',week:'Week 2 · The Power Tricks',color:'sky',icon:'🏆',title:'Week 2 Boss Quiz',
+  sub:'All addition tricks mixed',boss:true,
+  teach:function(){return bossIntro('Week 2 Boss','Make-a-Ten, Doubles, and the +9/+8 magic — all mixed! This is real addition instinct. Score 75% or better for the trophy. 🏆');},
+  quiz:function(){return shuffle(genMakeTen().concat(genDoubles(),genNine())).slice(0,QUIZ_LEN);}
+ },
+
+ {id:'w3a',week:'Week 3 · Subtraction & Mastery',color:'grape',icon:'🔗',title:'Think Addition',
+  sub:'Subtraction is a missing partner',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">The big secret</span>
+      <h2>Think Addition 🔗</h2>
+      <p>Subtraction is just addition wearing a disguise! Instead of counting backwards (slow &amp; wobbly), ask a <b>"what plus"</b> question.</p>
+      <div class="trick"><b>13 − 8</b> means: <b>"8 plus what makes 13?"</b><br>
+        8 + 5 = 13, so 13 − 8 = <b>5</b>. You already knew it!</div>
+      <div class="eg">15 − 7 → "7 + ? = 15" → 8</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> Every subtraction has an addition twin. 13−8=5 lives in the same family as 8+5=13. Know the add fact → you know the take-away fact.</div>
+    </div>`;},
+  quiz:function(){return genThinkAdd();}
+ },
+ {id:'w3b',week:'Week 3 · Subtraction & Mastery',color:'grape',icon:'🪜',title:'Down Through Ten',
+  sub:'Land on 10, then finish',
+  teach:function(){return `
+    <div class="lesson">
+      <span class="tag">Subtraction power move</span>
+      <h2>Down Through Ten 🪜</h2>
+      <p>Just like Make-a-Ten, but going down. Break the jump so you <b>land on 10</b> first. Watch <b>15 − 7</b>:</p>
+      <div class="trick"><b>Step 1:</b> 15 − 5 = 10 (take away just enough to hit 10).<br>
+        <b>Step 2:</b> You still owe 2 more. 10 − 2 = <b>8</b>.</div>
+      <div class="eg">15 − 7 → 15 − 5 → 10 − 2 → 8</div>
+      <div class="trick">🦉 <b>Hoot's tip:</b> Ten is a cosy resting branch. Always hop down to 10 first, then take the rest. Partners of Ten help again!</div>
+    </div>`;},
+  quiz:function(){return genDownTen();}
+ },
+ {id:'w3c',week:'Week 3 · Subtraction & Mastery',color:'grape',icon:'👑',title:'Grand Master Quiz',
+  sub:'Everything, mixed & timed',boss:true,
+  teach:function(){return bossIntro('Grand Master Challenge','The final test! Adding AND subtracting, every trick, beat the clock. Score 75% or better to become a certified Number Ninja. 👑');},
+  quiz:function(){return shuffle(genMakeTen().concat(genNine(),genThinkAdd(),genDownTen(),genDoubles())).slice(0,QUIZ_LEN);}
+ }
+];
+
+/* ========= helpers to draw visuals ========= */
+function tenFrame(a,b){
+  var cells='';for(var i=0;i<10;i++){var cl=i<a?'a':(i<a+b?'b':'');cells+='<div class="tf-cell '+cl+'">'+(i<a+b?'●':'')+'</div>';}
+  return '<div class="tenframe">'+cells+'</div>';
+}
+function bondSVG(top,l,r){
+  return '<div class="bond"><div class="bond-top">'+top+'</div><div class="bond-legs"><div class="bond-leaf">'+l+'</div><div class="bond-leaf">'+r+'</div></div></div>';
+}
+function bossIntro(t,msg){
+  return '<div class="lesson" style="text-align:center"><span class="tag">Boss Battle</span><h2>'+t+'</h2><p>'+msg+'</p><button class="btn sun block" onclick="startQuizFor(CUR)">Start the challenge! ⚔️</button></div>';
+}
+
+/* ========= QUESTION GENERATORS =========
+   each returns array of {q, a, hint} */
+function mk(q,a,hint,tf){return {q:q,a:a,hint:hint||'',tf:tf||null};}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
+function pick(n){return Math.floor(Math.random()*n);}
+
+/* QUIZ_LEN = how many questions per quiz round.
+   Each generator now returns a LARGE pool; we shuffle and take QUIZ_LEN,
+   so a child can replay many times before ever seeing a repeat. */
+var QUIZ_LEN=12;
+function take(pool){return shuffle(pool).slice(0,QUIZ_LEN);}
+
+function genPartners(){ // every "make 10" fact, both directions + true/false style
+  var out=[];
+  for(var a=1;a<=9;a++){
+    out.push(mk(a+' + ? = 10',10-a,'Partner of '+a+' is '+(10-a)+' — together they fill the ten-frame'));
+    out.push(mk('? + '+a+' = 10',10-a,'What joins '+a+' to make a full ten? '+(10-a)));
+    out.push(mk('10 − '+a,10-a,'Take '+a+' from a full ten → '+(10-a)+' left'));
+  }
+  return take(out);
+}
+function genCountOn(){
+  var out=[];
+  for(var big=4;big<=9;big++){ for(var sm=1;sm<=3;sm++){
+    out.push(mk(sm+' + '+big,sm+big,'Flip it: start at '+big+', hop up '+sm));
+    out.push(mk(big+' + '+sm,sm+big,'Start at '+big+', hop up '+sm));
+  }}
+  return take(out);
+}
+function genMakeTen(){ // ALL single-digit sums that cross ten (both orders)
+  var out=[];
+  for(var a=2;a<=9;a++){ for(var b=2;b<=9;b++){
+    if(a+b>10 && a+b<=18){
+      var gap=10-a;               // what 'a' needs to reach ten
+      var left=b-gap;             // leftover after making ten
+      out.push(mk(a+' + '+b,a+b,'Make ten: '+a+' needs '+gap+', split '+b+' into '+gap+'+'+left+' → 10 + '+left+' = '+(a+b),
+        {first:a,gap:gap,rest:left}));
+    }
+  }}
+  return take(out);
+}
+function genDoubles(){
+  var out=[];
+  for(var d=1;d<=9;d++){
+    out.push(mk(d+' + '+d,d+d,'Double '+d+' = '+(d+d)));
+    if(d<9){out.push(mk(d+' + '+(d+1),d+d+1,'Near-double: double '+d+' ('+(d+d)+') plus 1'));
+            out.push(mk((d+1)+' + '+d,d+d+1,'Near-double: double '+d+' ('+(d+d)+') plus 1'));}
+  }
+  return take(out);
+}
+function genNine(){ // +9 and +8 "add ten, give some back"
+  var out=[];
+  for(var o=2;o<=9;o++){
+    out.push(mk('9 + '+o,9+o,'Make ten: 9 needs 1. Split '+o+' into 1 + '+(o-1)+' → 10 + '+(o-1)+' = '+(9+o),
+      {first:9,gap:1,rest:o-1}));
+    out.push(mk(o+' + 9',9+o,'Make ten: 9 needs 1. Split '+o+' into 1 + '+(o-1)+' → 10 + '+(o-1)+' = '+(9+o),
+      {first:9,gap:1,rest:o-1}));
+  }
+  for(var p=3;p<=9;p++){
+    out.push(mk('8 + '+p,8+p,'Make ten: 8 needs 2. Split '+p+' into 2 + '+(p-2)+' → 10 + '+(p-2)+' = '+(8+p),
+      {first:8,gap:2,rest:p-2}));
+    out.push(mk(p+' + 8',8+p,'Make ten: 8 needs 2. Split '+p+' into 2 + '+(p-2)+' → 10 + '+(p-2)+' = '+(8+p),
+      {first:8,gap:2,rest:p-2}));
+  }
+  return take(out);
+}
+function genThinkAdd(){ // every teen minus, solved as a missing partner (addition twin)
+  var out=[];
+  for(var w=11;w<=17;w++){ for(var s=2;s<=9;s++){
+    var ans=w-s;
+    if(ans>=1 && ans<=9 && s<=9){
+      out.push(mk(w+' − '+s,ans,'Think addition: '+s+' + '+ans+' = '+w+', so '+w+' − '+s+' = '+ans));
+    }
+  }}
+  return take(out);
+}
+function genDownTen(){ // teen minus, solved by landing on ten first
+  var out=[];
+  for(var w=11;w<=17;w++){ for(var s=2;s<=9;s++){
+    var ans=w-s;
+    if(ans>=1 && ans<=9 && s>(w-10)){ // only when it actually crosses ten
+      var toTen=w-10;                 // take this much to hit 10
+      var rest=s-toTen;               // still owed after reaching 10
+      out.push(mk(w+' − '+s,ans,'Down through ten: '+w+' − '+toTen+' = 10, then 10 − '+rest+' = '+ans,
+        {sub:true,start:w,toTen:toTen,rest:rest,ans:ans}));
+    }
+  }}
+  return take(out);
+}
+
+/* ========= BADGES ========= */
+var BADGES=[
+ {id:'first',ic:'🐣',nm:'First Flight',ds:'Finish any quiz'},
+ {id:'perfect',ic:'💯',nm:'Perfect Hoot',ds:'Score 10/10'},
+ {id:'fire5',ic:'🔥',nm:'On Fire',ds:'5 correct in a row'},
+ {id:'speed',ic:'⚡',nm:'Speed Wing',ds:'Quiz under 45 seconds'},
+ {id:'boss1',ic:'🏆',nm:'Week Champ',ds:'Beat a Boss quiz'},
+ {id:'master',ic:'👑',nm:'Number Ninja',ds:'Beat the Grand Master'}
+];
+
+/* ========= PROGRESS / HUD ========= */
+function levelOf(xp){return Math.floor(xp/100)+1;}
+function refreshHUD(){
+  document.getElementById('hudOwl').innerHTML=owl('happy');
+  document.getElementById('homeOwl').innerHTML=owl('happy');
+  document.getElementById('lvlBadge').textContent='Lv '+levelOf(P.xp);
+  document.getElementById('xpFill').style.width=((P.xp%100))+'%';
+  document.getElementById('starN').textContent=P.stars;
+  document.getElementById('streakN').textContent=P.streak;
+  document.getElementById('muteBtn').textContent=P.mute?'🔇':'🔊';
+}
+function awardBadge(id){ if(!P.badges[id]){P.badges[id]=1;var b=BADGES.find(function(x){return x.id===id;});
+  toast('🏅 Sticker earned: '+b.nm);beep('star');confetti(false);saveP();} }
+
+/* ========= NAV ========= */
+var CUR=null;
+function switchTab(name){
+  ['home','lesson','quiz','stickers'].forEach(function(s){
+    document.getElementById('screen-'+s).classList.toggle('active',s===name);
+    var t=document.getElementById('tab-'+s); if(t)t.classList.toggle('on',s===name);
+  });
+  beep('tap');
+  if(name==='home')renderQuest();
+  if(name==='stickers')renderBadges();
+  if(name==='quiz' && !document.getElementById('quizLive').style.display.match(/block/))resetQuizSetup();
+  window.scrollTo(0,0);
+}
+function unlockedIndex(){ // how many lessons are unlocked
+  var u=0;for(var i=0;i<LESSONS.length;i++){ if(i===0||P.done[LESSONS[i-1].id]) u=i; else break; }
+  return u;
+}
+function renderQuest(){
+  var host=document.getElementById('questMap');host.innerHTML='';var lastWeek='';var uIdx=unlockedIndex();
+  LESSONS.forEach(function(L,i){
+    if(L.week!==lastWeek){var wl=document.createElement('div');wl.className='week-label';wl.textContent=L.week;host.appendChild(wl);lastWeek=L.week;}
+    var locked = i>uIdx;
+    var stars=P.best[L.id]||0;
+    var node=document.createElement('div');node.className='qnode';
+    var dot='<div class="qdot '+(locked?'lock':L.color)+'" '+(locked?'':'onclick="openLesson(\''+L.id+'\')"')+' style="'+(locked?'':'background:var(--'+L.color+');box-shadow:0 5px 0 var(--'+L.color+'-d)')+'">'+(locked?'🔒':L.icon)+'</div>';
+    var starsHTML='';for(var s=0;s<3;s++)starsHTML+='<span class="star '+(s<stars?'on':'')+'">⭐</span>';
+    var card='<div class="qcard '+(locked?'lock':'')+'" '+(locked?'':'onclick="openLesson(\''+L.id+'\')"')+'>'
+      +'<h3>'+L.title+'</h3><p>'+L.sub+'</p>'+(locked?'':'<div class="qmeta">'+starsHTML+'</div>')+'</div>';
+    node.innerHTML='<div class="line"></div>'+dot+card;
+    host.appendChild(node);
+  });
+}
+function openLesson(id){
+  CUR=id;var L=LESSONS.find(function(x){return x.id===id;});
+  document.getElementById('lessonBody').innerHTML=L.teach();
+  if(!L.boss){
+    document.getElementById('lessonBody').innerHTML+='<button class="btn '+L.color+' block" onclick="startQuizFor(\''+id+'\')">I\'m ready — quiz me! 🎮</button>';
+  }
+  switchTab('lesson');
+}
+function openCurrentLesson(){ openLesson(CUR||LESSONS[unlockedIndex()].id); }
+
+/* ========= QUIZ ENGINE ========= */
+var Q={list:[],idx:0,correct:0,run:0,maxRun:0,answered:false,t0:0,timer:null,misses:[]};
+function resetQuizSetup(){
+  document.getElementById('quizLive').style.display='none';
+  document.getElementById('quizResult').style.display='none';
+  var s=document.getElementById('quizSetup');s.style.display='block';
+  var uIdx=unlockedIndex();var opts='';
+  LESSONS.forEach(function(L,i){ if(i<=uIdx){opts+='<button class="btn '+L.color+' block" onclick="startQuizFor(\''+L.id+'\')">'+L.icon+'  '+L.title+'</button>';} });
+  s.innerHTML='<div class="hoot-talk"><span class="big-owl">'+owl('cheer')+'</span>'
+    +'<div class="bubble">Pick something to practise! Each quiz has 10 quick questions. Beat your best for 3 stars ⭐⭐⭐</div></div>'
+    +'<div class="eyebrow">Choose your practice</div>'+opts;
+}
+function startQuizFor(id){
+  CUR=id;var L=LESSONS.find(function(x){return x.id===id;});
+  Q={list:L.quiz(),idx:0,correct:0,run:0,maxRun:0,answered:false,t0:Date.now(),timer:null,misses:[]};
+  document.getElementById('quizSetup').style.display='none';
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('quizLive').style.display='block';
+  switchTab('quiz');
+  document.getElementById('screen-quiz').classList.add('active'); // ensure
+  Q.timer=setInterval(function(){document.getElementById('qTimer').textContent='⏱ '+Math.round((Date.now()-Q.t0)/1000)+'s';},250);
+  renderQ();
+}
+function renderQ(){
+  Q.answered=false;var item=Q.list[Q.idx];
+  document.getElementById('qProg').textContent=(Q.idx+1)+' / '+Q.list.length;
+  document.getElementById('qText').textContent=item.q;
+  document.getElementById('qHint').textContent='';
+  document.getElementById('qFrame').innerHTML='';
+  // build 4 options incl correct
+  var opts=[item.a];var span=Math.max(3,Math.ceil(item.a*0.4));
+  var guard=0;
+  while(opts.length<4 && guard++<50){var cand=item.a+(pick(2)?1:-1)*(1+pick(span+2));if(cand>=0&&opts.indexOf(cand)<0)opts.push(cand);}
+  while(opts.length<4){var f=pick(20);if(opts.indexOf(f)<0)opts.push(f);}
+  shuffle(opts);
+  var host=document.getElementById('qOpts');host.innerHTML='';
+  opts.forEach(function(o){var b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=function(){answer(o,item,b);};host.appendChild(b);});
+}
+function answer(val,item,btn){
+  if(Q.answered)return;Q.answered=true;
+  var right=(val===item.a);
+  var all=document.querySelectorAll('#qOpts .opt');
+  all.forEach(function(b){ if(parseInt(b.textContent,10)===item.a)b.classList.add('right');
+    else if(b===btn)b.classList.add('wrong'); else b.classList.add('dim'); });
+  document.getElementById('qHint').textContent=item.hint;
+  if(item.tf) showQFrame(item.tf);
+  if(right){
+    Q.correct++;Q.run++;Q.maxRun=Math.max(Q.maxRun,Q.run);beep('right');
+    if(Q.run===5)awardBadge('fire5');
+  } else {
+    Q.run=0;beep('wrong');
+    document.getElementById('hudOwl').innerHTML=owl('oops');
+    Q.misses.push(item);
+    setTimeout(function(){document.getElementById('hudOwl').innerHTML=owl('happy');},700);
+  }
+  var wait = item.tf ? (right?1700:2300) : (right?650:1200);
+  setTimeout(nextQ,wait);
+}
+/* Build the animated ten-frame reveal. Addition: fill 'first' (blue),
+   'gap' cells (yellow) complete the ten, 'rest' spills green into row 2.
+   Subtraction: show a full ten resting-branch, then take the rest away. */
+function showQFrame(tf){
+  var host=document.getElementById('qFrame');
+  function cell(cls,txt){return '<div class="c '+cls+'">'+(txt||'')+'</div>';}
+  if(tf.sub){
+    // full ten row + the extra ones, then cross to show landing on ten
+    var ones=tf.start-10;
+    var r1='';for(var i=0;i<10;i++)r1+=cell('first','●');
+    var r2='';for(var j=0;j<5;j++)r2+= j<ones?cell('rest','●'):cell('','');
+    host.innerHTML='<div class="row full">'+r1+'</div>'
+      +'<div class="row" style="margin-top:4px">'+r2+'</div>'
+      +'<div class="cap">'+tf.start+' is one full ten + '+ones+'. Take '+tf.rest+' from the ten → land on '+tf.ans+'</div>';
+    return;
+  }
+  // addition: one ten-row (first + gap) then leftover row
+  var row1='';var f=tf.first,g=tf.gap,r=tf.rest;
+  for(var k=0;k<10;k++){ row1+= k<f?cell('first','●') : k<f+g?cell('gap','●') : cell('',''); }
+  var row2='';for(var m=0;m<5;m++){ row2+= m<r?cell('rest','●'):cell('',''); }
+  host.innerHTML='<div class="row full">'+row1+'</div>'
+    +(r>0?'<div class="row" style="margin-top:4px">'+row2+'</div>':'')
+    +'<div class="cap">'+f+' (blue) + '+g+' (yellow) = a full ten'+(r>0?', then + '+r+' more (green)':'')+'</div>';
+}
+function nextQ(){
+  Q.idx++;
+  if(Q.idx>=Q.list.length){finishQuiz();return;}
+  renderQ();
+}
+function finishQuiz(){
+  clearInterval(Q.timer);
+  var secs=Math.round((Date.now()-Q.t0)/1000);
+  var pct=Math.round(Q.correct/Q.list.length*100);
+  var n=Q.list.length;
+  var stars = pct>=95?3 : pct>=75?2 : pct>=45?1:0;
+  // xp + stars
+  P.xp+=Q.correct*10; P.stars+=stars;
+  if(Q.maxRun>=3)P.streak=Q.maxRun;
+  var prevBest=P.best[CUR]||0; if(stars>prevBest)P.best[CUR]=stars;
+  var L=LESSONS.find(function(x){return x.id===CUR;});
+  var passed = pct>=75;
+  if(passed){ P.done[CUR]=1; }
+  // badges
+  awardBadge('first');
+  if(Q.correct===Q.list.length)awardBadge('perfect');
+  if(secs<Math.round(n*4.5) && passed)awardBadge('speed');
+  if(L.boss && passed)awardBadge('boss1');
+  if(CUR==='w3c' && passed)awardBadge('master');
+  var leveled = levelOf(P.xp)>levelOf(P.xp-Q.correct*10);
+  saveP();refreshHUD();
+  if(passed){confetti(true);beep(leveled?'level':'star');}
+  // render result
+  document.getElementById('quizLive').style.display='none';
+  var mood = pct>=80?'wow':pct>=50?'happy':'think';
+  var starsHTML='';for(var s=0;s<3;s++)starsHTML+=(s<stars?'⭐':'☆');
+  var missHTML='';
+  if(Q.misses.length){ missHTML='<div class="eyebrow" style="margin-top:16px">Let\'s fix these together</div>';
+    Q.misses.forEach(function(m){missHTML+='<div class="miss">'+m.q+' = '+m.a+'<div class="fix">🦉 '+m.hint+'</div></div>';});
+  }
+  var nextBtn='';
+  var uIdx=unlockedIndex();
+  if(passed && CUR!=='w3c'){
+    nextBtn='<button class="btn leaf block" onclick="goNext()">Next nest unlocked! Continue →</button>';
+  } else if(!passed){
+    nextBtn='<button class="btn sun block" onclick="startQuizFor(CUR)">Try again — you\'ve got this! 🔁</button>';
+  } else {
+    nextBtn='<button class="btn grape block" onclick="switchTab(\'stickers\')">See your stickers 🏅</button>';
+  }
+  var msg = pct>=80?'Brilliant! Your number instinct is growing strong.':
+            pct>=50?'Good hooting! A little more practice and you\'ll fly.':
+            'Every wise owl practises. Read the tips and try again!';
+  var special = (CUR==='w3c'&&passed)?'<div class="eg" style="color:var(--grape-d)">👑 You are a certified Number Ninja! 👑</div>':'';
+  document.getElementById('quizResult').style.display='block';
+  document.getElementById('quizResult').innerHTML=
+    '<div class="result"><span class="big-owl" style="width:96px;height:96px;display:inline-block">'+owl(mood)+'</span>'
+    +'<div class="scorepct">'+Q.correct+'/'+Q.list.length+'</div>'
+    +'<div class="starsrow">'+starsHTML+'</div>'
+    +special
+    +'<div class="big">'+ (passed?'Nest Cleared! 🎉':'Keep going! 💪') +'</div>'
+    +'<p style="color:var(--soft)">'+msg+' <br>⏱ '+secs+'s · +'+(Q.correct*10)+' XP</p>'
+    +nextBtn+'</div>'+missHTML;
+  window.scrollTo(0,0);
+}
+function goNext(){
+  var i=LESSONS.findIndex(function(x){return x.id===CUR;});
+  if(i>=0 && i+1<LESSONS.length){ openLesson(LESSONS[i+1].id); }
+  else switchTab('home');
+}
+
+/* ========= STICKERS ========= */
+function renderBadges(){
+  var host=document.getElementById('badgeGrid');host.innerHTML='';
+  BADGES.forEach(function(b){var on=P.badges[b.id];
+    host.innerHTML+='<div class="badge '+(on?'on':'')+'"><div class="ic">'+b.ic+'</div><div class="nm">'+b.nm+'</div><div class="ds">'+b.ds+'</div></div>';});
+}
+function resetAll(){
+  P={xp:0,stars:0,streak:0,mute:P.mute,done:{},best:{},badges:{}};saveP();refreshHUD();
+  toast('Quest reset! Fresh start 🥚');switchTab('home');
+}
+
+/* ========= BOOT ========= */
+(async function(){ await loadP(); refreshHUD(); renderQuest(); })();
+</script>
+</body>
+</html>
